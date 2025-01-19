@@ -1,0 +1,25 @@
+name: Deploy Lab
+run-name: Deploy lab configuration 🚀
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    environment: deploy
+    steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_wrapper: false
+    - uses: Boostport/setup-cloudflare-warp@v1
+      with:
+        organization: jrife
+        auth_client_id: ${{ secrets.CLOUDFLARE_CLIENT_ID }}
+        auth_client_secret: ${{ secrets.CLOUDFLARE_CLIENT_SECRET }}
+    - name: Terraform Plan
+      id: plan
+      working-directory: ./terraform
+      continue-on-error: false
+      env:
+        IPMI_ADMIN_PASSWORD: ${{ secrets.IPMI_ADMIN_PASSWORD }}
+      run: |
+        TF_VAR_credentials="{\"user\":\"admin\",\"pass\":\"$IPMI_ADMIN_PASSWORD\"}" terraform plan -no-color
